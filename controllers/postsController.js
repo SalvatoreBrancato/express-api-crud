@@ -21,7 +21,7 @@ async function create(req, res){
 //show
 async function show(req, res){
     const slug = req.params.slug
-
+    
     const data = await prisma.post.findUnique({
         where: {
             slug: slug
@@ -38,6 +38,36 @@ async function show(req, res){
 
 //show all
 async function showAll(req, res){
+
+    //filtro published
+    const filtroPublished = req.query.published
+    
+    if(filtroPublished == "true"){
+        const data = await prisma.post.findMany({
+            where: {
+                published: true
+            }
+        })
+        return res.json(data)
+    }
+
+    //filtro contenuto
+    const {title, content} = req.query
+    if(title || content){
+        const data = await prisma.post.findMany({
+            where:{
+                title:{
+                    contains: title
+                },
+                content:{
+                    contains: content
+                }
+            }
+        })
+        return res.json(data)
+    }
+
+    //nessun filtro
     const data = await prisma.post.findMany();
 
     return res.json(data)
@@ -47,6 +77,7 @@ async function showAll(req, res){
 async function update(req, res){
     const slug = req.params.slug;
     const datiInIngresso = req.body
+    
 
     //controllo se il post esiste
     const post = await prisma.post.findUnique({
